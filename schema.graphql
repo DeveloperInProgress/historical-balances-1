@@ -1,0 +1,10 @@
+type AccountSnapshot @entity {
+  "id"
+  id: ID!
+  accountId: String!
+  snapshotAtBlock: BigInt!
+  freeBalance: BigInt!
+  reserveBalance: BigInt!
+  totalBalance: BigInt!
+  timestamp: Date!
+}
