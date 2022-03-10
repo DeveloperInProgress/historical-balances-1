@@ -47,20 +47,11 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
         case "Deposit":
           accounts = await handleDeposit(event);
           break;
-        case "Reserved":
-          accounts = await handleReserved(event);
+        case "Deposited":
+          accounts = await handleReservRepatriated(event);
           break;
         case "Withdraw":
           accounts = await handleWithdraw(event);
-          break;
-        case "Unreserved":
-          accounts = await handleUnreserved(event);
-          break;
-        case "Slash":
-          accounts = await handleSlash(event);
-          break;
-        case "ReservRepatriated":
-          accounts = await handleReservRepatriated(event);
           break;
         default:
           break;
@@ -79,14 +70,6 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
       switch (method) {
         case "Rewarded":
           accounts = await handleRewarded(event);
-          break; 
-        case "Bonded":
-          accounts = await handleBonded(event);
-          break;
-        case "Unbonded":
-          accounts = await handleUnbonded(event);
-          break;
-        default:
           break;
       }
     }
