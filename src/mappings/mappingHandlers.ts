@@ -22,6 +22,7 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
       event: { method, section, index },
     } = event;
 
+    let accounts: string[] = [];
     if (section === "balances") {
       const eventType = `${section}/${method}`;
       logger.info(
@@ -33,7 +34,6 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
         `
       );
 
-      let accounts: string[] = [];
       switch (method) {
         case "Endowed":
           accounts = await handleEndowed(event);
@@ -47,43 +47,49 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
         case "Deposit":
           accounts = await handleDeposit(event);
           break;
-        case "Reserved":
-          accounts = await handleReserved(event);
+        case "Deposited":
+          accounts = await handleReservRepatriated(event);
           break;
         case "Withdraw":
           accounts = await handleWithdraw(event);
           break;
-        case "Unreserved":
-          accounts = await handleUnreserved(event);
-          break;
-        case "Slash":
-          accounts = await handleSlash(event);
-          break;
-        case "ReservRepatriated":
-          accounts = await handleReservRepatriated(event);
-          break;
-        case "Rewarded":
-          accounts = await handleRewarded(event);
-          break;
-        case "Contributed":
-          accounts = await handleContributed(event);
-          break;
-        case "Bonded":
-          accounts = await handleBonded(event);
-          break;
-        case "Unbonded":
-          accounts = await handleUnbonded(event);
-          break;
         default:
           break;
       }
-
-      for (const a of accounts) {
-        if (accounts4snapshot.length > 0 && accounts4snapshot.indexOf(a) > -1) {
-          continue;
-        }
-        accounts4snapshot.push(a);
+    }
+    if (section === "staking") {
+      const eventType = `${section}/${method}`;
+      logger.info(
+        `
+        Block: ${blockNumber}, Event ${eventType} :
+        -------------
+          ${JSON.stringify(event.toJSON(), null, 1)}  
+        =============
+        `
+      )
+      switch (method) {
+        case "Rewarded":
+          accounts = await handleRewarded(event);
+          break;
       }
+    }
+    if (section === "crowdloan" && method === "Contributed") {
+      const eventType = `${section}/${method}`;
+      logger.info(
+        `
+        Block: ${blockNumber}, Event ${eventType} :
+        -------------
+          ${JSON.stringify(event.toJSON(), null, 1)}  
+        =============
+        `
+      )
+        accounts = await handleContributed(event);
+    }
+    for (const a of accounts) {
+      if (accounts4snapshot.length > 0 && accounts4snapshot.indexOf(a) > -1) {
+        continue;
+      }
+      accounts4snapshot.push(a);
     }
   }
 
