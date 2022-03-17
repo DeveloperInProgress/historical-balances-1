@@ -5,9 +5,7 @@ import { AccountSnapshot } from "../types";
 
 class AccountInfoAtBlock {
   accountId: string;
-  freeBalance: bigint;
-  reserveBalance: bigint;
-  totalBalance: bigint;
+  balance: bigint;
   snapshotAtBlock: bigint;
   timestamp: Date;
 }
@@ -47,20 +45,11 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
         case "Deposit":
           accounts = await handleDeposit(event);
           break;
-        case "Reserved":
-          accounts = await handleReserved(event);
+        case "Deposited":
+          accounts = await handleReservRepatriated(event);
           break;
         case "Withdraw":
           accounts = await handleWithdraw(event);
-          break;
-        case "Unreserved":
-          accounts = await handleUnreserved(event);
-          break;
-        case "Slash":
-          accounts = await handleSlash(event);
-          break;
-        case "ReservRepatriated":
-          accounts = await handleReservRepatriated(event);
           break;
         default:
           break;
@@ -79,14 +68,6 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
       switch (method) {
         case "Rewarded":
           accounts = await handleRewarded(event);
-          break; 
-        case "Bonded":
-          accounts = await handleBonded(event);
-          break;
-        case "Unbonded":
-          accounts = await handleUnbonded(event);
-          break;
-        default:
           break;
       }
     }
@@ -133,9 +114,7 @@ async function takeAccountSnapshot(
         id: id,
         accountId: accountId,
         snapshotAtBlock: accountInfo.snapshotAtBlock,
-        freeBalance: accountInfo.freeBalance,
-        reserveBalance: accountInfo.reserveBalance,
-        totalBalance: accountInfo.totalBalance,
+        balance: accountInfo.balance,
         timestamp: timestamp
       });
       await newSnapshot.save();
@@ -148,32 +127,17 @@ async function getAccountInfoAtBlockNumber(
   timestamp: Date
 ): Promise<AccountInfoAtBlock> {
   logger.info(`getAccountInfo at ${blockNumber} by addres:${accountId}`);
-  const raw: AccountInfo = (await api.query.system.account(
-    accountId
-  )) as unknown as AccountInfo;
-
+  const balance = await api.query.balances.freeBalance(accountId)
   let accountInfo: AccountInfoAtBlock;
-  if (raw) {
     accountInfo = {
       accountId: accountId,
-      freeBalance: raw.data.free.toBigInt(),
-      reserveBalance: raw.data.reserved.toBigInt(),
-      totalBalance: raw.data.free.toBigInt() + raw.data.reserved.toBigInt(),
+      balance: BigInt(balance.toString()),
       snapshotAtBlock: blockNumber,
       timestamp: timestamp,
     };
-  } else {
-    accountInfo = {
-      accountId: accountId,
-      freeBalance: BigInt(0),
-      reserveBalance: BigInt(0),
-      totalBalance: BigInt(0),
-      snapshotAtBlock: blockNumber,
-      timestamp: timestamp,
-    };
-  }
+
   logger.info(
-    `getAccountInfo at ${blockNumber} : ${accountInfo.accountId}--${accountInfo.freeBalance}--${accountInfo.reserveBalance}--${accountInfo.totalBalance}`
+    `getAccountInfo at ${blockNumber} : ${accountInfo.accountId}--${accountInfo.balance}`
   );
   return accountInfo;
 }
