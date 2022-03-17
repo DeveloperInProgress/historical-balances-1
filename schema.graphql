@@ -3,8 +3,6 @@ type AccountSnapshot @entity {
   id: ID!
   accountId: String!
   snapshotAtBlock: BigInt!
-  freeBalance: BigInt!
-  reserveBalance: BigInt!
-  totalBalance: BigInt!
+  balance: BigInt!
   timestamp: Date!
 }
