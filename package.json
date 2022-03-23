@@ -19,7 +19,7 @@
   "author": "Hao",
   "license": "MIT",
   "devDependencies": {
-    "@polkadot/api": "^7",
+    "@polkadot/api": "^7.12.1",
     "@subql/cli": "latest",
     "@subql/types": "latest",
     "typescript": "^4.1.3"
