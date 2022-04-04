@@ -127,7 +127,11 @@ async function getAccountInfoAtBlockNumber(
   timestamp: Date
 ): Promise<AccountInfoAtBlock> {
   logger.info(`getAccountInfo at ${blockNumber} by addres:${accountId}`);
-  const balance = await api.query.balances.freeBalance(accountId)
+  const balance = api.query.system.account
+    ? (await api.query.system.account(accountId) as any).data.free
+    : api.query.balances.account
+    ? (await api.query.balances.account(accountId) as any).free
+    : await api.query.balances.freeBalance(accountId);
   let accountInfo: AccountInfoAtBlock;
     accountInfo = {
       accountId: accountId,
